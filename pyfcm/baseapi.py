@@ -164,6 +164,14 @@ class BaseAPI(object):
         if extra_kwargs:
             fcm_payload.update(extra_kwargs)
 
+        # If both 'notification' and 'data' payloads exists, move everything in 'notification' to 'data' and delete
+        # 'notification' payload, so that the message will always be handled by onMessageReceived in client app.
+        # Ref:  https://github.com/google/gcm/issues/63
+        #       https://github.com/firebase/quickstart-android/issues/28
+        if 'notification' in fcm_payload and 'data' in fcm_payload:
+            fcm_payload['data'].update(fcm_payload['notification'])
+            del fcm_payload['notification']
+
         return self.json_dumps(fcm_payload)
 
     def send_request(self, payloads=None):
